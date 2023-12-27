@@ -1,7 +1,18 @@
 # Data-Transformation-Project
 Data Wrangling, cleaning, standardization, normalization, and *maybe* modelling
 
-## Initial Script
-First script correctly replaces values, but contains an error that replaces all NULL with default values. Also, it does not standardize column names.
+## RPA script.ipynb and address_parse.py
+<pre>
+  This script takes in an excel file filled with addresses for data transformation ad cleaning. 
+  This code will address parse by splitting the address 'ID','House Number', 'Compass', 'Street Name', 'Artery Name', 'ADDRESS'.
+</pre>
 
-## 2nd Script
+## Database normalization
+# ingestion_mapping.ipynb
+<pre>
+  First trial - 
+</pre>
+# ingestion_mapping2.ipynb
+<pre>
+  Second trial - map all headers
+</pre>
