@@ -4,6 +4,7 @@
 1. [Introduction](#Introduction)
 2. [Folder Structure](#Folder-Structure)
 4. [How to Use](#How-to-Use)
+5. [Contact](#Contact)
 
 ## Introduction
 This project contains scripts for address parsing and database standardization for vendor databases.
