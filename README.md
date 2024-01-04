@@ -1,9 +1,9 @@
 # Vendor Database Standardization and Consolidation Project
 
 ## Table of Contents
-1. [Introduction](##Introduction)
-2. [Folder Structure](##Folder_Structure)
-4. [How to Use](##How_to_Use)
+1. [Introduction](#Introduction)
+2. [Folder Structure](#Folder_Structure)
+4. [How to Use](#How_to_Use)
 
 ## Introduction
 This project contains scripts for address parsing and database standardization for vendor databases.
