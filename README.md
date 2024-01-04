@@ -2,8 +2,8 @@
 
 ## Table of Contents
 1. [Introduction](#Introduction)
-2. [Folder Structure](#Folder_Structure)
-4. [How to Use](#How_to_Use)
+2. [Folder Structure](#Folder%20Structure)
+4. [How to Use](#How%20to%20Use)
 
 ## Introduction
 This project contains scripts for address parsing and database standardization for vendor databases.
