@@ -10,7 +10,7 @@ addresses = pd.read_excel("Enter your file name here")
 def parse_address(address):
      try:
           result = geocoder.geocode(address)
-          if result and 'components' in result[0];
+          if result and 'components' in result[0]:
              return {
                     'house_number': components.get('house_number', ''),
                     'Street Name': components.get('road', ''),
