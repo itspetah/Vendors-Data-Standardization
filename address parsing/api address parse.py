@@ -7,7 +7,7 @@ api = "Enter your API key here"
 geocoder = OpenGeocode(api)
 addresses = pd.read_excel("Enter your file name here")
 
-def parse_address(address)
+def parse_address(address):
      try:
           result = geocoder.geocode(address)
           if result and 'components' in result[0];
