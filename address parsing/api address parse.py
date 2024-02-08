@@ -1,5 +1,3 @@
-# More accurate address parsing compared to using regex or usaaddress
-
 from opencage import OpenGeocode
 import pandas as pd
 
@@ -11,6 +9,7 @@ def parse_address(address):
      try:
           result = geocoder.geocode(address)
           if result and 'components' in result[0]:
+             components = result[0]['components']
              return {
                     'house_number': components.get('house_number', ''),
                     'Street Name': components.get('road', ''),
@@ -20,9 +19,9 @@ def parse_address(address):
                     'Country': components.get('country', ''),
                   }
      except Exception as e:
-          print("{address} cannot be found and parsed. Error: {e}")
+          print(f"{address} cannot be found and parsed. Error: {e}")
      return None
 
 parsed_addresses = addresses['Address'].apply(parse_address)
-addresses = pd.concat([addresses, parsed_addresses.applu(pd.Series)], axis=1)
+addresses = pd.concat([addresses, pd.DataFrame(parsed_addresses.tolist())], axis=1)
 addresses.to_excel("parsed_addresses.xlsx", index=False)
