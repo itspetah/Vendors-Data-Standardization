@@ -1,16 +1,14 @@
 import pandas as pd
-from opencage.geocoder import OpenCageGeocode
+from geopy.geocoders import Nominatim
 
-# Set up OpenCage API key
-api_key = 'YOUR_OPENCAGE_API_KEY'
-geocoder = OpenCageGeocode(api_key)
+# Set up Nominatim Geocoder
+geolocator = Nominatim(user_agent="aka_finder")
 
 def find_aka_names(address):
-    # Query OpenCage API to find the location details
-    results = geocoder.geocode(address, no_annotations='1')
-    if results and 'components' in results[0]:
-        components = results[0]['components']
-        return components.get('alternative_name', [])
+    # Query Nominatim API to find the location details
+    location = geolocator.geocode(address)
+    if location:
+        return location.raw.get('alternate_names', [])
 
 def main(input_file, output_file):
     # Read the Excel file with addresses in Manhattan
@@ -24,6 +22,10 @@ def main(input_file, output_file):
     for index, row in df.iterrows():
         address = row['Address']
         aka_names = find_aka_names(address)
+        if aka_names:
+            aka_names = [name for name in aka_names.split(',')]
+        else:
+            aka_names = []
         aka_names_list.append(aka_names)
         aka_counts.append(len(aka_names))
     
