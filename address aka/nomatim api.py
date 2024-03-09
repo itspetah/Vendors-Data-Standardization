@@ -1,42 +1,53 @@
-import pandas as pd
-from geopy.geocoders import Nominatim
+import requests
+import openpyxl
+import time
 
-# Set up Nominatim Geocoder
-geolocator = Nominatim(user_agent="aka_finder")
+nominatim_url = "https://nominatim.openstreetmap.org/search"
+user_agent = "your_application_name/version (your_email@example.com)"  # Replace with your details
 
-def find_aka_names(address):
-    # Query Nominatim API to find the location details
-    location = geolocator.geocode(address)
-    if location:
-        return location.raw.get('alternate_names', [])
+output_file = "manhattan_addresses.xlsx"
 
-def main(input_file, output_file):
-    # Read the Excel file with addresses in Manhattan
-    df = pd.read_excel(input_file)
-    
-    # Initialize lists to store aka names and counts
-    aka_names_list = []
-    aka_counts = []
-    
-    # Iterate over each address
-    for index, row in df.iterrows():
-        address = row['Address']
-        aka_names = find_aka_names(address)
-        if aka_names:
-            aka_names = [name for name in aka_names.split(',')]
-        else:
-            aka_names = []
-        aka_names_list.append(aka_names)
-        aka_counts.append(len(aka_names))
-    
-    # Add aka names and counts to the DataFrame
-    df['Aka Names'] = aka_names_list
-    df['Aka Count'] = aka_counts
-    
-    # Write the DataFrame to a new Excel file
-    df.to_excel(output_file, index=False)
+def get_address_details(address):
+    params = {
+        "q": address,
+        "format": "json",
+        "user-agent": user_agent
+    }
+    response = requests.get(nominatim_url, params=params)
+    return response.json()
 
-if __name__ == "__main__":
-    input_file = 'manhattan_addresses.xlsx'
-    output_file = 'manhattan_aka_addresses.xlsx'
-    main(input_file, output_file)
+def process_address(address_data):
+    if address_data:
+        try:
+            address_components = address_data[0]["address"]
+            street = address_components.get("road", "")
+            housenumber = address_components.get("housenumber", "")
+            postcode = address_components.get("postcode", "")
+            if street and housenumber:
+                full_address = f"{housenumber} {street}, Manhattan, NYC, {postcode}"
+                aka_names = []
+                for name in address_data:
+                    if name["display_name"] != full_address:
+                        aka_names.append(name["display_name"])
+                return full_address, len(aka_names), aka_names
+        except KeyError as e:
+            print(f"KeyError: {e}. Address data might be missing or in unexpected format.")
+    return None, None, None
+
+workbook = openpyxl.load_workbook("Manhattan Addresses.xlsx")
+sheet = workbook.active
+
+# Assuming addresses are in the first column (column A)
+for cell in sheet["A"]:
+    address = cell.value
+    if address:
+        full_address, aka_name_count, aka_names = process_address(get_address_details(address))
+        if full_address:
+            row = cell.row
+            sheet.cell(row=row, column=2).value = full_address
+            sheet.cell(row=row, column=3).value = aka_name_count
+            sheet.cell(row=row, column=4).value = ", ".join(aka_names)
+        time.sleep(1)  # Add delay to avoid rate limiting
+
+workbook.save(output_file)
+print(f"Addresses and AKA names saved to '{output_file}'.")
