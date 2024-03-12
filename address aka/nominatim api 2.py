@@ -2,8 +2,33 @@ import openpyxl
 import requests
 
 def standardize_address(address):
-    # Add your standardization logic here
-    return address.lower()  # For simplicity, just converting to lowercase
+    api_key = 'Your_Bing_Maps_API_Key'
+    base_url = 'https://dev.virtualearth.net/REST/v1/Locations'
+
+    query_params = {
+        'query': address,
+        'includeNeighborhood': 1,
+        'maxResults': 1,
+        'key': api_key
+    }
+
+    response = requests.get(base_url, params=query_params)
+    data = response.json()
+
+    if 'resourceSets' in data and len(data['resourceSets']) > 0 and 'resources' in data['resourceSets'][0]:
+        resources = data['resourceSets'][0]['resources']
+        if resources:
+            location = resources[0]
+            standardized_address = {
+                'house_number': location.get('address', {}).get('addressLine', ''),
+                'road': location.get('address', {}).get('addressLine', ''),
+                'city': location.get('address', {}).get('locality', ''),
+                'state': location.get('address', {}).get('adminDistrict', ''),
+                'country': location.get('address', {}).get('countryRegion', ''),
+                'postcode': location.get('address', {}).get('postalCode', '')
+            }
+            return standardized_address.upper()
+    return None
 
 def get_aka_names(address):
     url = f"https://nominatim.openstreetmap.org/search?format=json&q={address}"
