@@ -2,6 +2,7 @@ import requests
 import openpyxl
 import time
 
+# Define API endpoint and user agent
 nominatim_url = "https://nominatim.openstreetmap.org/search"
 user_agent = "your_application_name/version (your_email@example.com)"  # Replace with your details
 
@@ -27,27 +28,33 @@ def process_address(address_data):
                 full_address = f"{housenumber} {street}, Manhattan, NYC, {postcode}"
                 aka_names = []
                 for name in address_data:
-                    if name["display_name"] != full_address:
-                        aka_names.append(name["display_name"])
+                    if name.get("display_name") != full_address:
+                        aka_names.append(name.get("display_name", ""))
                 return full_address, len(aka_names), aka_names
         except KeyError as e:
             print(f"KeyError: {e}. Address data might be missing or in unexpected format.")
     return None, None, None
 
-workbook = openpyxl.load_workbook("Manhattan Addresses.xlsx")
+# Create a new Excel workbook
+workbook = openpyxl.Workbook()
 sheet = workbook.active
+sheet.cell(row=1, column=1).value = "Full Address"
+sheet.cell(row=1, column=2).value = "AKA Name Count"
+sheet.cell(row=1, column=3).value = "AKA Names"
 
-# Assuming addresses are in the first column (column A)
-for cell in sheet["A"]:
-    address = cell.value
-    if address:
+address_file = "Manhattan Addresses.xlsx"
+
+with open(address_file, "r", encoding="utf-8") as f:
+    for address in f:
+        address = address.strip()
         full_address, aka_name_count, aka_names = process_address(get_address_details(address))
         if full_address:
-            row = cell.row
-            sheet.cell(row=row, column=2).value = full_address
-            sheet.cell(row=row, column=3).value = aka_name_count
-            sheet.cell(row=row, column=4).value = ", ".join(aka_names)
+            row = sheet.max_row + 1
+            sheet.cell(row=row, column=1).value = full_address
+            sheet.cell(row=row, column=2).value = aka_name_count
+            sheet.cell(row=row, column=3).value = ", ".join(aka_names)
         time.sleep(1)  # Add delay to avoid rate limiting
 
 workbook.save(output_file)
+
 print(f"Addresses and AKA names saved to '{output_file}'.")
