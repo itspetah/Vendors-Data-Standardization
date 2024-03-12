@@ -1,5 +1,5 @@
 import requests
-import openpyxl
+import pandas as pd
 import time
 
 # Define API endpoint and user agent
@@ -35,26 +35,24 @@ def process_address(address_data):
             print(f"KeyError: {e}. Address data might be missing or in unexpected format.")
     return None, None, None
 
-# Create a new Excel workbook
-workbook = openpyxl.Workbook()
-sheet = workbook.active
-sheet.cell(row=1, column=1).value = "Full Address"
-sheet.cell(row=1, column=2).value = "AKA Name Count"
-sheet.cell(row=1, column=3).value = "AKA Names"
-
+# Read addresses from Excel file using pandas
 address_file = "Manhattan Addresses.xlsx"
+df = pd.read_excel(address_file, header=None, names=["Address"])
 
-with open(address_file, "r", encoding="utf-8") as f:
-    for address in f:
-        address = address.strip()
-        full_address, aka_name_count, aka_names = process_address(get_address_details(address))
-        if full_address:
-            row = sheet.max_row + 1
-            sheet.cell(row=row, column=1).value = full_address
-            sheet.cell(row=row, column=2).value = aka_name_count
-            sheet.cell(row=row, column=3).value = ", ".join(aka_names)
-        time.sleep(1)  # Add delay to avoid rate limiting
+# Create a new DataFrame to store results
+results = []
 
-workbook.save(output_file)
+# Process each address
+for address in df["Address"]:
+    full_address, aka_name_count, aka_names = process_address(get_address_details(address))
+    if full_address:
+        results.append([full_address, aka_name_count, ", ".join(aka_names)])
+    time.sleep(1)  # Add delay to avoid rate limiting
+
+# Create a DataFrame from the results
+results_df = pd.DataFrame(results, columns=["Full Address", "AKA Name Count", "AKA Names"])
+
+# Save results to Excel file
+results_df.to_excel(output_file, index=False)
 
 print(f"Addresses and AKA names saved to '{output_file}'.")
