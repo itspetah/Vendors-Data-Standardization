@@ -1,5 +1,5 @@
 import requests
-import pandas as pd
+import openpyxl
 import time
 
 # Define API endpoint and user agent
@@ -33,26 +33,34 @@ def process_address(address_data):
                 return full_address, len(aka_names), aka_names
         except KeyError as e:
             print(f"KeyError: {e}. Address data might be missing or in unexpected format.")
-    return None, None, None
+    # If address processing fails, return the input address as full address
+    return address, None, None
 
-# Read addresses from Excel file using pandas
+# Create a new Excel workbook
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+sheet.cell(row=1, column=1).value = "Input Address"
+sheet.cell(row=1, column=2).value = "Full Address"
+sheet.cell(row=1, column=3).value = "AKA Name Count"
+sheet.cell(row=1, column=4).value = "AKA Names"
+
 address_file = "Manhattan Addresses.xlsx"
-df = pd.read_excel(address_file, header=None, names=["Address"])
 
-# Create a new DataFrame to store results
-results = []
+with open(address_file, "r", encoding="utf-8") as f:
+    for row_index, address in enumerate(f, start=2):  # Start from row 2
+        address = address.strip()
+        full_address, aka_name_count, aka_names = process_address(get_address_details(address))
+        if full_address:
+            sheet.cell(row=row_index, column=1).value = address
+            sheet.cell(row=row_index, column=2).value = full_address
+            sheet.cell(row=row_index, column=3).value = aka_name_count
+            sheet.cell(row=row_index, column=4).value = ", ".join(aka_names)
+        else:
+            # If address processing fails, add input address to the output file
+            sheet.cell(row=row_index, column=1).value = address
+            print(f"Unable to process address: {address}")
+        time.sleep(1)  # Add delay to avoid rate limiting
 
-# Process each address
-for address in df["Address"]:
-    full_address, aka_name_count, aka_names = process_address(get_address_details(address))
-    if full_address:
-        results.append([full_address, aka_name_count, ", ".join(aka_names)])
-    time.sleep(1)  # Add delay to avoid rate limiting
-
-# Create a DataFrame from the results
-results_df = pd.DataFrame(results, columns=["Full Address", "AKA Name Count", "AKA Names"])
-
-# Save results to Excel file
-results_df.to_excel(output_file, index=False)
+workbook.save(output_file)
 
 print(f"Addresses and AKA names saved to '{output_file}'.")
