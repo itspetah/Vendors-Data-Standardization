@@ -51,13 +51,13 @@ with open(address_file, "r", encoding="utf-8") as f:
         address = address.strip()
         full_address, aka_name_count, aka_names = process_address(get_address_details(address))
         if full_address:
-            sheet.cell(row=row_index, column=1).value = address
-            sheet.cell(row=row_index, column=2).value = full_address
+            sheet.cell(row=row_index, column=1).value = address.encode('utf-8', 'ignore').decode()  # Encode the address string
+            sheet.cell(row=row_index, column=2).value = full_address.encode('utf-8', 'ignore').decode()  # Encode the address string
             sheet.cell(row=row_index, column=3).value = aka_name_count
             sheet.cell(row=row_index, column=4).value = ", ".join(aka_names)
         else:
             # If address processing fails, add input address to the output file
-            sheet.cell(row=row_index, column=1).value = address
+            sheet.cell(row=row_index, column=1).value = address.encode('utf-8', 'ignore').decode()  # Encode the address string
             print(f"Unable to process address: {address}")
         time.sleep(1)  # Add delay to avoid rate limiting
 
