@@ -14,7 +14,17 @@ def standardize_address(address):
     }
 
     response = requests.get(base_url, params=query_params)
-    data = response.json()
+    
+    # Check if response is successful
+    if response.status_code == 200:
+        try:
+            data = response.json()
+        except ValueError:
+            print("Error: Unable to decode response JSON.")
+            return None
+    else:
+        print(f"Error: Request failed with status code {response.status_code}")
+        return None
 
     if 'resourceSets' in data and len(data['resourceSets']) > 0 and 'resources' in data['resourceSets'][0]:
         resources = data['resourceSets'][0]['resources']
@@ -34,7 +44,18 @@ def get_aka_names(address):
     bound_box = "-74.0479,40.6829,-73.9067,40.8790"
     url = f"https://nominatim.openstreetmap.org/search?format=json&q={address}&bounded=1&viewbox={bound_box}"
     response = requests.get(url)
-    data = response.json()
+    
+    # Check if response is successful
+    if response.status_code == 200:
+        try:
+            data = response.json()
+        except ValueError:
+            print("Error: Unable to decode response JSON.")
+            return set()
+    else:
+        print(f"Error: Request failed with status code {response.status_code}")
+        return set()
+
     aka_names = set()
     for entry in data:
         if 'display_name' in entry:
@@ -47,15 +68,17 @@ def process_excel(input_file, output_file):
 
     output_wb = openpyxl.Workbook()
     output_ws = output_wb.active
-    output_ws.append(["Original Address", 'Street Address','Locality','Admin District','Country Region','Postal Code'])
+    output_ws.append(["Original Address", 'Street Address','Locality','Admin District','Country Region','Postal Code', 'AKA Count', 'AKA Names'])
 
     for row in ws.iter_rows(min_row=2, values_only=True):
         original_address = row[0]
         standardized_address = standardize_address(original_address)
-        aka_names = get_aka_names(standardized_address)
-        aka_count = len(aka_names)
         if standardized_address:
-            output_ws.append([original_address] + standardized_address, aka_count, " | ".join(aka_names))
+            aka_names = get_aka_names(standardized_address)
+            aka_count = len(aka_names)
+            output_ws.append([original_address] + standardized_address + [aka_count, " | ".join(aka_names)])
+        else:
+            output_ws.append([original_address] + [''] * 5 + [0, ''])
 
     output_wb.save(output_file)
 
