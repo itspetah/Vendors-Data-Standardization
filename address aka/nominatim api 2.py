@@ -2,7 +2,7 @@ import openpyxl
 import requests
 
 def standardize_address(address):
-    api_key = 'AmReLCGGnE6U3hfPutxmvvp9CYqjocmHoQ3PutSaPK-EW3evnqk86eM99R4MNCxk'
+    api_key = 'API KEY'
     base_url = 'https://dev.virtualearth.net/REST/v1/Locations'
 
     query_params = {
