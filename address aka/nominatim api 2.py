@@ -41,8 +41,13 @@ def standardize_address(address):
     return None
 
 def get_aka_names(address):
+    local_ip = '192.168.x.x'  # Replace with your local IP address
+    port = '8080'  # Replace with the port number on which Nominatim is running
     bound_box = "-74.0479,40.6829,-73.9067,40.8790"
-    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address}&bounded=1&viewbox={bound_box}"
+    
+    # Update the URL to point to the local Nominatim service
+    url = f"http://{local_ip}:{port}/search?format=json&q={address}&bounded=1&viewbox={bound_box}"
+    
     response = requests.get(url)
     
     # Check if response is successful
